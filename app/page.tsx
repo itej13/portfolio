@@ -125,8 +125,8 @@ export default function Home() {
           <h1 id="hero-title">I build &amp; ship AI-first products, end to end.</h1>
           <p className="hero-note"><span>&gt;_</span> shipping useful software, deliberately.</p>
           <div className="hero-actions">
-            <a href="https://github.com/itej13" target="_blank" rel="noreferrer">GitHub <Arrow /></a>
-            <a href="mailto:itej1310@gmail.com">Email <span aria-hidden="true">→</span></a>
+            <a href="https://github.com/itej13/portfolio" target="_blank" rel="noreferrer">GitHub <Arrow /></a>
+            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=itej1310%40gmail.com" target="_blank" rel="noreferrer">Email <span aria-hidden="true">→</span></a>
           </div>
         </div>
 
@@ -190,8 +190,8 @@ export default function Home() {
           <h2 id="about-title">About</h2>
           <p>I&apos;m a full-stack developer who builds AI-assisted, deliberately. I care about shipping small-and-working over big-and-broken. I&apos;m comfortable across Next.js, React, Python, Swift, Postgres/Supabase, and LLM/RAG app patterns.</p>
           <div className="about-links">
-            <a href="https://github.com/itej13" target="_blank" rel="noreferrer">GitHub <Arrow /></a>
-            <a href="mailto:itej1310@gmail.com">Email <span aria-hidden="true">→</span></a>
+            <a href="https://github.com/itej13/portfolio" target="_blank" rel="noreferrer">GitHub <Arrow /></a>
+            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=itej1310%40gmail.com" target="_blank" rel="noreferrer">Email <span aria-hidden="true">→</span></a>
           </div>
         </div>
       </section>
