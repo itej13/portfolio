@@ -19,4 +19,6 @@ Next.js App Router with native CSS and a canvas sequence; no animation dependenc
 
 ## Assets
 
-Original Blender files are unchanged. CadNav-derived model components are credited in the footer and public/armor/ATTRIBUTION.txt. Only rendered imagery is shipped. Project visuals are expressly labeled interface studies or geographic illustrations.
+The hero uses the complete supplied CadNav IronMan.obj armor model, credited in the footer and public/armor/ATTRIBUTION.txt. The source files remain unchanged and outside the Git repository and website; only rendered imagery is shipped. The renderer removes helper-ring geometry, applies physically based materials informed by the source colors, adds eye/reactor emission, and poses the arms with rigid transforms. The source MAX rig is not imported. Project visuals are expressly labeled interface studies or geographic illustrations.
+
+The 19 September 2026 model replacement passed render and browser verification; both verification records are in docs/QA.md.

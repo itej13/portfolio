@@ -10,7 +10,9 @@ Cinematic engineering studio: deep black #08090b, warm white #f2eee7, cinnabar #
 
 ## Reference
 
-The built-in image generator supplied docs/work-concept.png. Its initial character-based hero concept was rejected by the generation tool; the hero uses the existing user-owned Blender scene instead. Work-section layout, palette, typography, and content hierarchy follow the selected concept; product studies intentionally replace the concept's fabricated interface data with verified workflow descriptions.
+The built-in image generator supplied docs/work-concept.png. Its initial character-based hero concept was rejected by the generation tool. The hero now uses the complete supplied CadNav IronMan.obj armor model, replacing the earlier partial-model reconstruction. Source colors inform physically based red, gold, and graphite materials, with emissive eyes and reactor and rigidly posed arms; the source MAX rig is not imported. Only rendered imagery is shipped. Work-section layout, palette, typography, and content hierarchy follow the selected concept; product studies intentionally replace the concept's fabricated interface data with verified workflow descriptions.
+
+The 19 September 2026 model replacement passed render and browser verification; see docs/QA.md.
 
 ## Accessibility and resilience
 

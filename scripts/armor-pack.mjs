@@ -4,7 +4,7 @@ import { readdir, mkdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 
-const source = '/private/tmp/portfolio-armor-renders';
+const source = '/private/tmp/portfolio-cadnav-renders';
 const output = path.resolve('public/armor');
 await mkdir(output, { recursive: true });
 if (process.argv.includes('--preview')) {

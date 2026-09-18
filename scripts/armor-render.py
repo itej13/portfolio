@@ -6,6 +6,8 @@ Blender --background --factory-startup --disable-autoexec --python scripts/armor
 from pathlib import Path
 import argparse
 import json
+import hashlib
+import shutil
 import math
 import sys
 
@@ -13,22 +15,70 @@ import bpy
 from mathutils import Matrix, Vector
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = Path('/Users/tejasdas/Developer/Blender/Iron Man/cadnav-blender/reference-fit-v3/IronMan_editable.blend')
-INVENTORY = SOURCE.parents[1] / 'control-audit/component-inventory.json'
+SOURCE = Path('/Users/tejasdas/Developer/Blender/Iron Man/cadnav-source/cadnav.com_model/Model_D0901A13/IronMan.obj')
 OUT = ROOT / 'public/armor'
-RAW = Path('/private/tmp/portfolio-armor-renders')
+RAW = Path('/private/tmp/portfolio-cadnav-renders')
 parser = argparse.ArgumentParser()
 parser.add_argument('--preview', action='store_true')
 parser.add_argument('--frames', action='store_true')
 parser.add_argument('--keyframes', action='store_true')
 parser.add_argument('--poster', action='store_true')
+parser.add_argument('--save-scene', type=Path)
 parser.add_argument('--start', type=int, default=0)
 parser.add_argument('--end', type=int, default=95)
 args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])
 OUT.mkdir(parents=True, exist_ok=True)
 RAW.mkdir(parents=True, exist_ok=True)
-bpy.ops.wm.open_mainfile(filepath=str(SOURCE))
+# The source contains 27 mesh rings exported from rig helpers. Their audited
+# contiguous face range is excluded; every armor face and custom normal remains.
+source_bytes = SOURCE.read_bytes()
+assert hashlib.sha256(source_bytes).hexdigest() == 'f4e70fecbcccbd19c6a77505b7bee9bbd70199130c2ff591cee444231f9fbd02', 'Re-audit changed source.'
+source_text = source_bytes.decode()
+source_faces = 0
+prepared = []
+active_material = ''
+for line in source_text.splitlines(keepends=True):
+    if line.startswith('g ' ) or line.strip() == 'g':
+        continue
+    if line.startswith('usemtl '):
+        active_material = line
+    if line.startswith('f '):
+        source_faces += 1
+        if 140244 <= source_faces <= 149315:
+            continue
+    if line.startswith('f ') and source_faces == 135929:
+        prepared.append('usemtl yellow\n')  # Audited filled reactor disc.
+    prepared.append(line)
+    if line.startswith('f ') and source_faces == 136036:
+        prepared.append(active_material)
+assert source_faces == 149827, 'Source changed; re-audit helper exclusion before rendering.'
+clean_source = RAW / 'IronMan.obj'
+clean_source.write_text(''.join(prepared))
+shutil.copyfile(SOURCE.with_suffix('.mtl'), RAW / 'IronMan.mtl')
+bpy.ops.wm.read_factory_settings(use_empty=True)
+bpy.ops.wm.obj_import(filepath=str(clean_source), forward_axis='NEGATIVE_Z', up_axis='Y')
 scene = bpy.context.scene
+suit = next(obj for obj in scene.objects if obj.type == 'MESH')
+assert len(suit.data.polygons) == 149827 - 9072
+assert suit.data.has_custom_normals
+points = [suit.matrix_world @ v.co for v in suit.data.vertices]
+low = Vector(tuple(min(v[i] for v in points) for i in range(3)))
+high = Vector(tuple(max(v[i] for v in points) for i in range(3)))
+center = Vector(((low.x + high.x) / 2, (low.y + high.y) / 2, low.z))
+normalization = Matrix.Scale(2 / (high.z - low.z), 4) @ Matrix.Translation(-center)
+suit.data.transform(normalization @ suit.matrix_world)
+suit.matrix_world = Matrix.Identity(4)
+bpy.context.view_layer.objects.active = suit
+suit.select_set(True)
+bpy.ops.object.mode_set(mode='EDIT')
+bpy.ops.mesh.select_all(action='SELECT')
+bpy.ops.mesh.separate(type='LOOSE')
+bpy.ops.object.mode_set(mode='OBJECT')
+meshes = [obj for obj in scene.objects if obj.type == 'MESH']
+assert len(meshes) == 863
+assert sum(len(obj.data.polygons) for obj in meshes) == 140755
+bpy.context.view_layer.update()
+
 
 
 def material(name, color, metallic=0.7, roughness=0.24, emission=0):
@@ -52,45 +102,15 @@ gold = material('Portfolio | champagne gold titanium', (0.54, 0.29, 0.065), 0.86
 dark = material('Portfolio | graphite mechanical seams', (0.017, 0.022, 0.027), 0.78, 0.31)
 silver = material('Portfolio | polished titanium', (0.27, 0.32, 0.37), 0.92, 0.2)
 light = material('Portfolio | arc white cyan', (0.53, 0.92, 1.0), 0.05, 0.19, 9)
-inventory = {x['component_id']: x for x in json.loads(INVENTORY.read_text())['components']}
-meshes = [obj for obj in scene.objects if obj.type == 'MESH']
-
-for obj in meshes:
-    obj.hide_render = False
-    name = obj.name.lower()
-    old = ' '.join(mat.name.lower() for mat in obj.data.materials if mat)
-    mat = red
-    cid = obj.get('source_component')
-    if cid:
-        source_mats = inventory[cid]['materials']
-        if 'yellow' in source_mats:
-            mat = light
-        elif 'gold' in source_mats:
-            mat = gold
-        elif set(source_mats) <= {'darksilver', 'silver', 'black'}:
-            mat = dark
-    elif any(word in name for word in ['under-shell', 'bellows', 'articulation', 'inset floor', 'inner walls', 'socket', 'recess', 'rebate', 'neck']):
-        mat = dark
-    elif 'joint' in old or 'gaps' in old or 'dark' in old:
-        mat = dark
-    elif name.startswith('upper arm front') or name.startswith('thigh | front shield') or 'lateral long panel' in name:
-        mat = gold
-    elif 'reactor center' in name:
-        mat = light
-    elif 'reactor |' in name:
-        mat = silver
-    obj.data.materials.clear()
-    obj.data.materials.append(mat)
-    for polygon in obj.data.polygons:
-        polygon.material_index = 0
-
-# A narrow silver rim catches a clean highlight around the existing arc socket.
-reactor = bpy.data.objects.get('Reactor center')
-assert reactor is not None and len(meshes) > 200
-
-for obj in list(scene.objects):
-    if obj.type != 'MESH':
-        bpy.data.objects.remove(obj, do_unlink=True)
+# Preserve the supplied face material assignments, replacing only the shaders.
+palette = {'red': red, 'gold': gold, 'darksilver': dark, 'silver': silver,
+           'black': dark, 'lambert1': dark, 'yellow': light, '14_-_Default': dark}
+for index, obj in enumerate(meshes):
+    for slot in obj.material_slots:
+        source_name = slot.material.name.split(':')[-1].split('.')[0]
+        assert source_name in palette, source_name
+        slot.material = palette[source_name]
+    obj.name = f'CadNav armor {index + 1:03d}'
 
 camera_data = bpy.data.cameras.new('Portfolio portrait camera')
 camera = bpy.data.objects.new('Portfolio portrait camera', camera_data)
@@ -137,10 +157,12 @@ scene.render.image_settings.color_depth = '8'
 scene.render.image_settings.compression = 25
 scene.view_settings.view_transform = 'AgX'
 scene.view_settings.look = 'AgX - Medium High Contrast'
-scene.view_settings.exposure = -.3
+scene.view_settings.exposure = -.5
 
 original = {obj.name: obj.matrix_world.copy() for obj in meshes}
 centers = {obj.name: sum((obj.matrix_world @ Vector(p) for p in obj.bound_box), Vector()) / 8 for obj in meshes}
+source_centers = {name: normalization.inverted() @ center for name, center in centers.items()}
+shoulders = {1: normalization @ Vector((26.446579, 3.647027, 196.929092)), -1: normalization @ Vector((-26.406830, 4.085775, 197.394974))}
 
 
 def smooth(value):
@@ -148,37 +170,42 @@ def smooth(value):
     return t * t * (3 - 2 * t)
 
 
+def around(pivot, angle, axis):
+    return Matrix.Translation(pivot) @ Matrix.Rotation(angle, 4, axis) @ Matrix.Translation(-pivot)
+
+
 def pose(progress):
     pull = smooth(progress / .43)
     inspect = smooth((progress - .32) / .32)
     assemble = smooth((progress - .73) / .27)
-    spread = math.sin(math.pi * smooth((progress - .32) / .58)) * 2.5
-    angle = math.radians(70 * inspect - 61 * assemble)
-    rotation = Matrix.Rotation(angle, 4, 'Z')
+    spread = math.sin(math.pi * smooth((progress - .32) / .58))
+    rotation = Matrix.Rotation(math.radians(64 * inspect - 57 * assemble), 4, 'Z')
     for obj in meshes:
-        name = obj.name.lower()
         center = centers[obj.name]
-        offset = Vector((0, 0, 0))
         sign = 1 if center.x >= 0 else -1
-        if 'helmet' in name:
-            offset.z = .038
-        elif 'chest' in name or 'reactor' in name:
-            offset.y = -.058
-        elif 'shoulder' in name or 'upper arm' in name:
-            offset.x = sign * .065
-        elif 'forearm' in name or 'hand' in name:
-            offset.x = sign * .028
-        elif 'abdomen' in name:
-            offset.y = -.045
-        elif 'thigh' in name or 'shin' in name or 'calf' in name or 'knee' in name:
+        offset = Vector((0, 0, 0))
+        articulation = Matrix.Identity(4)
+        native = source_centers[obj.name]
+        if abs(native.x) > 27 and native.z > 175:
+            pivot = shoulders[sign]
+            articulation = around(pivot, math.radians(sign * (73 - 17 * spread)), 'Y')
+            offset.x = sign * .085
+        elif center.z > 1.74:
+            offset.z = .1
+        elif center.z > 1.25:
+            offset.y = -.12 if center.y < 0 else .08
             offset.x = sign * .025
-            offset.y = -.014 if center.y < 0 else .014
-        obj.matrix_world = rotation @ Matrix.Translation(offset * spread) @ original[obj.name]
-    target = Vector((0, 0, 1.37 - .35 * pull))
-    azimuth = math.radians(23)
-    camera.location = target + Vector((math.sin(azimuth) * 6, -math.cos(azimuth) * 6, .42 - .12 * pull))
+        elif center.z > .92:
+            offset.y = -.09 if center.y < 0 else .06
+        else:
+            offset.x = sign * .035
+            offset.y = -.025 if center.y < 0 else .025
+        obj.matrix_world = rotation @ Matrix.Translation(offset * spread) @ articulation @ original[obj.name]
+    target = Vector((0, 0, 1.39 - .36 * pull))
+    azimuth = math.radians(18)
+    camera.location = target + Vector((math.sin(azimuth) * 6, -math.cos(azimuth) * 6, .34 - .12 * pull))
     camera.rotation_euler = (target - camera.location).to_track_quat('-Z', 'Y').to_euler()
-    camera_data.ortho_scale = 1.46 + .8 * pull
+    camera_data.ortho_scale = 1.45 + .86 * pull
     bpy.context.view_layer.update()
 
 
@@ -208,6 +235,22 @@ else:
 (OUT / 'sequence.json').write_text(json.dumps({
     'frameCount': 96, 'width': 900, 'height': 1100,
     'pattern': '/armor/frame-{index:03d}.webp', 'poster': '/armor/poster.webp',
-    'source': 'Existing local reference-fit-v3 suit; CadNav-derived helmet, forearms, and hands.',
-    'credit': 'Base model components: cadnav.com. Local reconstruction, materials, lighting, and animation: Tejas Das portfolio.',
+    'source': 'Complete supplied CadNav IronMan.obj, with exported helper rings excluded.',
+    'sourceSha256': hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
+    'credit': 'Model: cadnav.com. Materials, lighting, posing, and animation: Tejas Das portfolio.',
 }, indent=2) + '\n')
+
+if args.save_scene:
+    scene.frame_start, scene.frame_end = 1, 96
+    scene.render.fps = 24
+    for frame in [*range(1, 97, 4), 96]:
+        scene.frame_set(frame)
+        pose((frame - 1) / 95)
+        for obj in [*meshes, camera]:
+            obj.keyframe_insert(data_path='location', frame=frame)
+            obj.keyframe_insert(data_path='rotation_euler', frame=frame)
+        camera_data.keyframe_insert(data_path='ortho_scale', frame=frame)
+    scene.frame_set(1)
+    scene['source_geometry'] = 'Complete supplied CadNav suit; helper rings excluded; original source unchanged.'
+    args.save_scene.parent.mkdir(parents=True, exist_ok=True)
+    bpy.ops.wm.save_as_mainfile(filepath=str(args.save_scene), compress=True)

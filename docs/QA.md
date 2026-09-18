@@ -1,5 +1,16 @@
 # Portfolio verification — 18 September 2026
 
+## Model replacement — 19 September 2026
+
+The hero now uses renders of the complete supplied CadNav IronMan.obj armor model, rather than the earlier partial-model reconstruction. The new renderer retains 140,755 armor faces after removing 9,072 helper-ring faces, reuses source colors through physically based materials, adds eye/reactor emission, and rigidly poses the arms without importing the MAX rig. Original source assets remain outside Git and the website. **Replacement verification passed.**
+
+- The saved Blender scene contains 863 animated mesh parts, 140,755 faces and 120,685 vertices. Custom normals remain on every part; transforms are finite and change at timeline frames 1, 58 and 96.
+- All 96 replacement WebP frames decode at 900×1100 with alpha; total frame size is 5.12 MiB. The poster is 1440×1760.
+- The production build, ESLint and scroll-boundary checks passed. Desktop (1440×900) and phone (390×844) browser checks showed the supplied suit, no horizontal overflow, and working chapter/frame transitions 0 → 43 → 80. The motion toggle restores the new poster.
+- The native MAX rig was not converted: the editable Blender scene uses keyframed rigid component transforms and an animated camera.
+
+ The checks, screenshots, frame size, and observations below are the preserved 18 September record and do not verify the replacement.
+
 ## Checks
 
 - ESLint, TypeScript, production build and `node scripts/check-sequence.mjs` passed. The sequence check covers clamping, all frame transitions, chapter boundaries, section offsets and short sections.

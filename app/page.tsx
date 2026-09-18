@@ -36,6 +36,6 @@ export default function Home() {
         </div>
       </section>
     </main>
-    <footer className="site-footer shell"><div><span>© {new Date().getFullYear()} Tejas Das</span><span>Built with curiosity. And a little arc energy.</span></div><div><span className="model-credit">Base model components: <a href="https://www.cadnav.com" target="_blank" rel="noreferrer">CadNav</a></span><a href="#top">Back to top <Arrow /></a></div></footer>
+    <footer className="site-footer shell"><div><span>© {new Date().getFullYear()} Tejas Das</span><span>Built with curiosity. And a little arc energy.</span></div><div><span className="model-credit">Armor model: <a href="https://www.cadnav.com" target="_blank" rel="noreferrer">CadNav</a></span><a href="#top">Back to top <Arrow /></a></div></footer>
   </>;
 }
