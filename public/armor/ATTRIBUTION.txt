@@ -1,0 +1,16 @@
+Armor sequence credits
+
+Base helmet, forearm, and hand geometry is derived from an Iron Man model
+downloaded from CadNav: https://www.cadnav.com/
+
+The rest of the suit is a local reference-guided reconstruction. Website
+materials, lighting, camera movement, animation, and renders were prepared
+for Tejas Das's portfolio. These rendered images are part of the website.
+The original downloadable 3D model is not distributed here.
+
+The source archive's terms permit modifications and use as part of artwork,
+projects, and websites, with attribution to cadnav.com. Standalone resale
+or redistribution of the source model is prohibited by those terms.
+
+Iron Man is a Marvel character. This is an independently made fan-inspired
+portfolio presentation and is not affiliated with Marvel.

@@ -1,32 +1,22 @@
-# PRODUCT.md
+# Tejas Das portfolio
 
-## What this is
-Personal portfolio of **Tejas Das** — AI-native product engineer. One page, one job: prove he ships real AI products end to end, and get the visitor to open a project or email him.
+A personal portfolio for Tejas Das, AI-native product engineer, with an Iron Man–inspired scroll-driven 3D armor sequence. The September 2026 user brief supersedes the earlier generic-HUD art direction.
 
-## Audience & scene
-Recruiters, founders, and engineers, usually on a laptop at a desk (often at night), arriving from GitHub or LinkedIn with under a minute of attention. Dark surface fits the scene and the subject.
+## Verified content
 
-## Product truth (do not invent beyond this)
-- Identity: Tejas Das · AI-native product engineer · github.com/itej13 · itej1310@gmail.com
-- 6 real systems. 5 live in production, 1 runs on-device:
-  1. F.R.I.D.A.Y. — AI codebase mentor; ask any GitHub repo questions, answered from source with citations (RAG: Gemini, ChromaDB). Live: https://friday-brown.vercel.app · Code: https://github.com/itej13/F.R.I.D.A.Y.
-  2. UniBuddy — multi-tenant SaaS syncing Google Classroom into one dashboard; DB-level isolation via Postgres RLS. Live: https://uni-buddy-kappa.vercel.app · Code: https://github.com/itej13/UniBuddy
-  3. SafeRoute — women's safety map of Delhi; routes scored by safety (NCRB data + crowd ratings), not just speed. Live: https://saferoute-eosin.vercel.app · Code: https://github.com/itej13/SafeRoute
-  4. ReplayIQ — sports-highlight finder from audio + motion + face signals (Python/OpenCV). Live: https://replayiq-blush.vercel.app · Code: https://github.com/itej13/replayiq
-  5. ★PTR — 2D platformer where you ARE a memory pointer; learn DSA by surviving it (TypeScript). Live: https://ptr-game.vercel.app · Code: https://github.com/itej13/ptr-game
-  6. J.A.R.V.I.S. — local voice AI: Node.js + local LLM + Three.js + voice cloning. Not deployed; runs on-device. Code only.
-- Optional reference: “a payment tracker a real business runs on daily” — no name expansion beyond FlowRev, no link.
-- Honesty rules: no user counts, no invented traction or metrics. “Live in production” is the claim. Never mention an AI cricket bowling machine.
-- About substance to preserve: builds AI-assisted deliberately and says so proudly; ships small-and-working over big-and-broken; comfortable across Next.js, React, TypeScript, Python, Swift, Postgres/Supabase, and LLM/RAG patterns.
+Featured: F.R.I.D.A.Y., ClaimShield, Rain Atlas — Uganda. Archive: Orbit Garden, Aftermark, UniBuddy, SafeRoute, ReplayIQ, ★PTR. Copy is based on the Projects memory folder and the newer July portfolio checkout.
 
-## Brand commitments
-- “Personal HUD” world: the portfolio is HIS heads-up display — he built J.A.R.V.I.S. and F.R.I.D.A.Y., both real, both named after the fiction that inspired them. Evoke the aesthetic only.
-- LEGAL: no Marvel/Iron Man imagery, logos, character artwork, film quotes, or “Stark Industries” branding. Generic status text only (e.g. “SYSTEMS ONLINE”).
+- F.R.I.D.A.Y. answers questions about selected files from public GitHub repositories, with citations; do not promise unlimited repository ingestion.
+- ClaimShield uses AI to extract document facts and fixed rules to produce traceable findings. No legal judgments, proven recoveries, or customer claims.
+- Rain Atlas includes forecasts, satellite imagery, and a separately described experimental model. No model-accuracy claims.
+- ReplayIQ's browser demo uses audio and motion; face signals and clip export belong to the local Python version.
+- No invented usage, revenue, uptime, or traction metrics. No private repository URLs or personal datasets.
+- DTU Computer Science, class of 2029. Public contact: itej1310@gmail.com, github.com/itej13.
 
-## Platform & constraints
-- Next.js 16 App Router + Tailwind v4 base, deployed on Vercel with zero config changes.
-- No animation libraries: CSS / WAAPI / IntersectionObserver only.
-- Must hold: prefers-reduced-motion support, keyboard navigation, ≥4.5:1 text contrast, fast first paint.
+## Implementation
 
-## Surface mode
-Single home route: **Experience** (the work leads), with a Persuade job (open a project / email).
+Next.js App Router with native CSS and a canvas sequence; no animation dependencies. 96 Blender-rendered RGBA WebP frames. Decode cache capped at 12 frames, three concurrent fetches, smaller bitmaps on phones. High-resolution poster remains available if animation fails. Honors reduced motion, provides a motion toggle, and uses a static layout on screens shorter than 600px.
+
+## Assets
+
+Original Blender files are unchanged. CadNav-derived model components are credited in the footer and public/armor/ATTRIBUTION.txt. Only rendered imagery is shipped. Project visuals are expressly labeled interface studies or geographic illustrations.
