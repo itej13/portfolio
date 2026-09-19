@@ -1,0 +1,21 @@
+Armor sequence credits
+
+The complete armor geometry comes from the supplied IronMan.obj model
+in the CadNav Model_D0901A13 archive: https://www.cadnav.com/
+
+The renderer preserves 140,755 armor faces after removing 9,072 helper-ring
+faces. Source colors inform the physically based red, gold, and graphite
+materials; the eyes and reactor use emission. Arms are posed with rigid
+transforms. The source MAX rig is not imported.
+
+Website materials, lighting, camera movement, animation, and renders were
+prepared for Tejas Das's portfolio. Only the rendered imagery is distributed
+with the website. The original downloadable model and rig remain outside
+the Git repository and are not distributed here.
+
+The source archive's terms permit modifications and use as part of artwork,
+projects, and websites, with attribution to cadnav.com. Standalone resale
+or redistribution of the source model is prohibited by those terms.
+
+Iron Man is a Marvel character. This is an independently made fan-inspired
+portfolio presentation and is not affiliated with Marvel.

@@ -1,0 +1,10 @@
+{
+  "frameCount": 96,
+  "width": 900,
+  "height": 1100,
+  "pattern": "/armor/frame-{index:03d}.webp",
+  "poster": "/armor/poster.webp",
+  "source": "Complete supplied CadNav IronMan.obj, with exported helper rings excluded.",
+  "sourceSha256": "f4e70fecbcccbd19c6a77505b7bee9bbd70199130c2ff591cee444231f9fbd02",
+  "credit": "Model: cadnav.com. Materials, lighting, posing, and animation: Tejas Das portfolio."
+}
