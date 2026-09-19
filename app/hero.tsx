@@ -1,7 +1,8 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { FRAME_COUNT, sequenceState } from "./sequence";
+import { sequenceState } from "./sequence";
+import { createFrameLoader } from "./frames";
 
 const motionQuery = "(prefers-reduced-motion: reduce)";
 const shortViewportQuery = "(max-height: 600px)";
@@ -31,77 +32,50 @@ export default function Hero() {
     if (!root || !screen) return;
     const context = screen.getContext("2d", { alpha: true });
     if (!context) return;
-    const controller = new AbortController();
-    const cache = new Map<number, ImageBitmap>();
-    const pending = new Set<number>(), failed = new Set<number>();
-    let disposed = false, desired = 0, drawn = -1, raf = 0, visible = true;
-    let queue: number[] = [];
+    let disposed = false, drawn = -1, raf = 0, currentChapter = -1;
     const bitmapWidth = window.innerWidth < 700 ? 540 : 900;
     screen.width = bitmapWidth;
     screen.height = Math.round(bitmapWidth * 1100 / 900);
     screen.style.opacity = "0";
     delete root.dataset.rendered;
+    const frames = motion && typeof createImageBitmap === "function" ? createFrameLoader(bitmapWidth, schedule) : null;
+    const progressBar = root.querySelector<HTMLElement>(".progress-track i");
 
     function draw() {
-      const bitmap = cache.get(desired);
-      if (!bitmap || !context || disposed || drawn === desired) return;
+      const frame = frames?.nearest();
+      if (!frame || !context || disposed || drawn === frame.index) return;
       context.clearRect(0, 0, screen!.width, screen!.height);
-      context.drawImage(bitmap, 0, 0, screen!.width, screen!.height);
+      context.drawImage(frame.bitmap, 0, 0, screen!.width, screen!.height);
       screen!.style.opacity = "1";
-      screen!.dataset.frame = String(desired);
+      screen!.dataset.frame = String(frame.index);
       root!.dataset.rendered = "true";
-      drawn = desired;
-    }
-    function loadQueue() {
-      if (disposed || !visible || !motion || typeof createImageBitmap !== "function") return;
-      while (pending.size < 3 && queue.length) {
-        const index = queue.shift()!;
-        if (cache.has(index) || pending.has(index) || failed.has(index)) continue;
-        pending.add(index);
-        fetch(`/armor/frame-${String(index).padStart(3, "0")}.webp`, { signal: controller.signal })
-          .then((response) => { if (!response.ok) throw new Error("Frame unavailable"); return response.blob(); })
-          .then((blob) => createImageBitmap(blob, { resizeWidth: bitmapWidth }))
-          .then((bitmap) => {
-            if (disposed) { bitmap.close(); return; }
-            cache.set(index, bitmap);
-            // Bound decoded image memory; compressed files remain in the browser cache.
-            if (cache.size > 12) {
-              const farthest = [...cache.keys()].sort((a, b) => Math.abs(b - desired) - Math.abs(a - desired))[0];
-              cache.get(farthest)?.close(); cache.delete(farthest);
-            }
-            draw();
-          })
-          .catch(() => { if (!disposed) failed.add(index); })
-          .finally(() => { pending.delete(index); loadQueue(); });
-      }
+      drawn = frame.index;
     }
     function update() {
       raf = 0;
       if (disposed) return;
       const rect = root!.getBoundingClientRect();
       const state = sequenceState(window.scrollY, window.scrollY + rect.top, root!.offsetHeight, window.innerHeight);
-      visible = rect.bottom > 0 && rect.top < window.innerHeight;
-      root!.style.setProperty("--progress", String(state.progress));
-      setChapter(getMotion() ? state.chapter : 0);
-      if (!motion) return;
-      desired = state.frame; draw();
-      queue = [0, 1, -1, 2, -2, 3, 4, 5].map((offset) => desired + offset).filter((index) => index >= 0 && index < FRAME_COUNT);
-      loadQueue();
+      const visible = !document.hidden && rect.bottom > 0 && rect.top < window.innerHeight;
+      if (progressBar) progressBar.style.transform = `scaleX(${state.progress})`;
+      const nextChapter = systemMotion ? state.chapter : 0;
+      if (nextChapter !== currentChapter) { currentChapter = nextChapter; setChapter(nextChapter); }
+      frames?.update(state.frame, visible);
+      if (visible) draw();
     }
     function schedule() { if (!raf) raf = requestAnimationFrame(update); }
-    const onVisibility = () => { if (!document.hidden) schedule(); };
+    const onVisibility = () => { if (document.hidden) frames?.update(drawn < 0 ? 0 : drawn, false); else schedule(); };
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
     document.addEventListener("visibilitychange", onVisibility);
     schedule();
     return () => {
-      disposed = true; controller.abort(); cancelAnimationFrame(raf);
-      cache.forEach((bitmap) => bitmap.close());
+      disposed = true; frames?.dispose(); cancelAnimationFrame(raf);
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [motion]);
+  }, [motion, systemMotion]);
 
   function nextChapter() {
     if (!section.current) return;

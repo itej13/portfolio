@@ -1,5 +1,13 @@
 # Portfolio verification — 18 September 2026
 
+## Scroll playback fix — 19 September 2026
+
+The live frame responses used `max-age=0, must-revalidate`. The old loader requested frames during scrolling and fetched them again after decoded-cache eviction, coupling playback to network latency. The replacement downloads the compressed sequence ahead, retains its blobs for reverse scrolling, and uses versioned browser-cache requests. It prioritizes the current frame and nearby frames, draws a ready neighbor while an exact frame decodes, and keeps 12 decoded images with at most two decodes and four downloads in flight. Hidden/offscreen playback pauses new work. Scroll progress now updates only its bar, and React chapter state changes only at chapter boundaries.
+
+- Production build/TypeScript, ESLint, `node scripts/check-sequence.mjs` and `node scripts/check-frames.mjs` passed. The loader check exercises prefetching, forward/reverse jumps without repeat downloads, memory/concurrency bounds, pause, failed responses and disposal during pending work.
+- Local production browser checks covered desktop and 390×844 mobile, chapter progression, reverse scrolling, the poster/motion toggle and horizontal overflow. No application warnings/errors were observed.
+- These checks validate the loading behavior, not a measured FPS guarantee. Initial playback still depends on network speed; mobile validation uses a browser viewport rather than a physical phone.
+
 ## Model replacement — 19 September 2026
 
 The hero now uses renders of the complete supplied CadNav IronMan.obj armor model, rather than the earlier partial-model reconstruction. The new renderer retains 140,755 armor faces after removing 9,072 helper-ring faces, reuses source colors through physically based materials, adds eye/reactor emission, and rigidly poses the arms without importing the MAX rig. Original source assets remain outside Git and the website. **Replacement verification passed.**
